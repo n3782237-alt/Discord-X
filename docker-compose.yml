@@ -1,0 +1,14 @@
+services:
+  db:
+    image: postgres:16-alpine
+    restart: unless-stopped
+    environment:
+      POSTGRES_USER: discordx
+      POSTGRES_PASSWORD: discordx_local_password
+      POSTGRES_DB: discordx
+    ports:
+      - "5432:5432"
+    volumes:
+      - discordx_pg:/var/lib/postgresql/data
+volumes:
+  discordx_pg:

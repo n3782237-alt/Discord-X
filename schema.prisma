@@ -1,0 +1,73 @@
+generator client {
+  provider = "prisma-client-js"
+}
+datasource db {
+  provider = "postgresql"
+  url      = env("DATABASE_URL")
+}
+model User {
+  id           String   @id @default(cuid())
+  email        String   @unique
+  username     String
+  passwordHash String
+  verified     Boolean  @default(false)
+  coins        Int      @default(100)
+  tier         String   @default("FREE")
+  createdAt    DateTime @default(now())
+  memberships  Membership[]
+  messages     Message[]
+}
+model VerificationCode {
+  id        String   @id @default(cuid())
+  email     String
+  codeHash  String
+  expiresAt DateTime
+  createdAt DateTime @default(now())
+  @@index([email])
+}
+model Server {
+  id        String   @id @default(cuid())
+  name      String
+  ownerId   String
+  createdAt DateTime @default(now())
+  channels  Channel[]
+  members   Membership[]
+}
+model Membership {
+  id       String @id @default(cuid())
+  userId   String
+  serverId String
+  user     User   @relation(fields: [userId], references: [id], onDelete: Cascade)
+  server   Server @relation(fields: [serverId], references: [id], onDelete: Cascade)
+  @@unique([userId, serverId])
+}
+model Channel {
+  id        String   @id @default(cuid())
+  name      String
+  type      String   @default("TEXT")
+  serverId  String
+  server    Server   @relation(fields: [serverId], references: [id], onDelete: Cascade)
+  messages  Message[]
+  createdAt DateTime @default(now())
+}
+model Message {
+  id        String   @id @default(cuid())
+  content   String
+  userId    String
+  channelId String
+  user      User     @relation(fields: [userId], references: [id])
+  channel   Channel  @relation(fields: [channelId], references: [id], onDelete: Cascade)
+  createdAt DateTime @default(now())
+}
+
+
+model Purchase {
+  id          String   @id @default(cuid())
+  userId      String
+  tier        String
+  amountCoins Int
+  previousTier String
+  createdAt   DateTime @default(now())
+  refundedAt  DateTime?
+  @@index([userId, createdAt])
+}
